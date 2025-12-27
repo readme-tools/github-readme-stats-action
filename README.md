@@ -121,4 +121,3 @@ with:
 
 - This action uses the same renderers and fetchers as `readme-tools/github-readme-stats`.
 - For higher API limits, use a PAT with `public_repo` scope.
-# github-readme-stats-action
