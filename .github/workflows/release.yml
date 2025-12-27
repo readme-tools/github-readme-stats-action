@@ -5,6 +5,8 @@ on:
       - "**"
     tags:
       - "v*.*.*"
+permissions:
+  contents: write
 jobs:
   update-semver:
     runs-on: ubuntu-latest
