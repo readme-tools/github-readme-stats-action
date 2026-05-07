@@ -2,11 +2,11 @@ import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 
 import { getInput, info, setFailed, setOutput, warning } from "@actions/core";
-import statsApi from "github-readme-stats/api/index.js";
-import repoApi from "github-readme-stats/api/pin.js";
-import topLangsApi from "github-readme-stats/api/top-langs.js";
-import wakatimeApi from "github-readme-stats/api/wakatime.js";
-import gistApi from "github-readme-stats/api/gist.js";
+import statsApi from "github-stats-extended/packages/core/src/api/index.js";
+import repoApi from "github-stats-extended/packages/core/src/api/pin.js";
+import topLangsApi from "github-stats-extended/packages/core/src/api/top-langs.js";
+import wakatimeApi from "github-stats-extended/packages/core/src/api/wakatime.js";
+import gistApi from "github-stats-extended/packages/core/src/api/gist.js";
 
 /**
  * Normalize option values to strings.
@@ -124,16 +124,7 @@ const run = async () => {
   const outputPath = path.resolve(process.cwd(), outputPathValue);
   await mkdir(path.dirname(outputPath), { recursive: true });
 
-  let svg = "";
-  const res = {
-    setHeader: () => {},
-    send: (value) => {
-      svg = value;
-      return value;
-    },
-  };
-
-  await handler({ query }, res);
+  const svg = await handler({ query })?.content;
   if (!svg) {
     throw new Error("Card renderer returned empty output.");
   }
