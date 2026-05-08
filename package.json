@@ -16,7 +16,7 @@
   },
   "dependencies": {
     "@actions/core": "^3.0.1",
-    "github-stats-extended": "github:stats-organization/github-stats-extended"
+    "@stats-organization/github-readme-stats-core": "2.1.2"
   },
   "devDependencies": {
     "husky": "9.1.7",

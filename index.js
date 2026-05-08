@@ -2,11 +2,13 @@ import { mkdir, writeFile } from "node:fs/promises";
 import path from "node:path";
 
 import { getInput, info, setFailed, setOutput, warning } from "@actions/core";
-import statsApi from "github-stats-extended/packages/core/src/api/index.js";
-import repoApi from "github-stats-extended/packages/core/src/api/pin.js";
-import topLangsApi from "github-stats-extended/packages/core/src/api/top-langs.js";
-import wakatimeApi from "github-stats-extended/packages/core/src/api/wakatime.js";
-import gistApi from "github-stats-extended/packages/core/src/api/gist.js";
+import {
+  gist,
+  api,
+  pin,
+  wakatime,
+  topLangs,
+} from "@stats-organization/github-readme-stats-core";
 
 /**
  * Normalize option values to strings.
@@ -63,11 +65,11 @@ const parseOptions = (value) => {
 // Map of card types to their respective API handlers.
 // TODO: Replace handler usage with a stable library API once exposed upstream.
 const cardHandlers = {
-  stats: statsApi,
-  "top-langs": topLangsApi,
-  pin: repoApi,
-  wakatime: wakatimeApi,
-  gist: gistApi,
+  stats: api,
+  "top-langs": topLangs,
+  pin,
+  wakatime,
+  gist,
 };
 
 /**
@@ -124,7 +126,7 @@ const run = async () => {
   const outputPath = path.resolve(process.cwd(), outputPathValue);
   await mkdir(path.dirname(outputPath), { recursive: true });
 
-  const svg = await handler({ query })?.content;
+  const svg = (await handler(query))?.content;
   if (!svg) {
     throw new Error("Card renderer returned empty output.");
   }
