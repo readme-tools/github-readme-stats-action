@@ -17,6 +17,10 @@ inputs:
     description: GitHub token (PAT or GITHUB_TOKEN).
     required: false
     default: ""
+  core_version:
+    description: Version of @stats-organization/github-readme-stats-core to use internally.
+    required: false
+    default: "v2"
 outputs:
   path:
     description: Path where the SVG file was written.
@@ -24,13 +28,13 @@ runs:
   using: composite
   steps:
     - name: Resolve relative path to package.json
-      id: resolve-path
+      id: resolve_path
       run: echo "package_json=$(realpath --relative-to="$GITHUB_WORKSPACE" "${{ github.action_path }}/package.json")" >> "$GITHUB_OUTPUT"
       shell: bash
     - name: Install pnpm
       uses: pnpm/action-setup@fc06bc1257f339d1d5d8b3a19a8cae5388b55320 # v5
       with:
-        package_json_file: ${{ steps.resolve-path.outputs.package_json }}
+        package_json_file: ${{ steps.resolve_path.outputs.package_json }}
     - name: Setup Node.js
       uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0
       with:
@@ -40,12 +44,14 @@ runs:
       shell: bash
       working-directory: ${{ github.action_path }}
     - name: Generate card
+      id: generate_card
       run: node ${{ github.action_path }}/index.js
       shell: bash
       env:
         INPUT_CARD: ${{ inputs.card }}
         INPUT_OPTIONS: ${{ inputs.options }}
         INPUT_PATH: ${{ inputs.path }}
+        INPUT_CORE_VERSION: ${{ inputs.core_version }}
         PAT_1: ${{ inputs.token || github.token }}
 branding:
   icon: bar-chart-2

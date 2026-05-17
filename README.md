@@ -73,6 +73,7 @@ This action is a recommended deployment option. You can also deploy on Vercel or
 - `options`: Card options as a query string (`key=value&...`) or JSON. If `username` is omitted, the action uses the repository owner.
 - `path`: Output path for the SVG file. Defaults to `profile/<card>.svg`.
 - `token`: GitHub token (PAT or `GITHUB_TOKEN`). For private repo stats, use a [PAT](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens) with `repo` and `read:user` scopes. For any gist, use a PAT with `gist` scope.
+- `core_version`: Version of [GitHub Stats Extended](https://github.com/stats-organization/github-stats-extended) to use internally. When omitted, the action uses the latest 2.x.x version.
 
 ## Examples
 
@@ -121,6 +122,16 @@ with:
   token: ${{ secrets.GITHUB_TOKEN }}
 ```
 
+Version-pinned example:
+
+```yaml
+with:
+  card: stats
+  options: username=octocat&show_icons=true
+  core_version: 2.1.2
+  token: ${{ secrets.GITHUB_TOKEN }}
+```
+
 ## Notes
 
-- This action uses the same renderers and fetchers as [readme-tools/github-readme-stats](https://github.com/readme-tools/github-readme-stats).
+- This action uses the same renderers and fetchers as [stats-organization/github-stats-extended](https://github.com/stats-organization/github-stats-extended).
