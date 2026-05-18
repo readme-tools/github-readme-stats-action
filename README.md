@@ -134,4 +134,4 @@ with:
 
 ## Notes
 
-- This action uses the same renderers and fetchers as [stats-organization/github-stats-extended](https://github.com/stats-organization/github-stats-extended).
+- This action uses the same renderers and fetchers as [github-stats-extended](https://github.com/stats-organization/github-stats-extended).
