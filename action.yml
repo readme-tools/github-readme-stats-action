@@ -1,6 +1,6 @@
 name: GitHub Readme Stats Action
 description: Generate GitHub Readme Stats cards in GitHub Actions.
-author: readme-tools
+author: stats-organization
 inputs:
   card:
     description: Card type to generate (stats, top-langs, pin, wakatime, gist).

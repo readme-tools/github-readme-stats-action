@@ -1,6 +1,6 @@
 # GitHub Readme Stats Action
 
-Generate [GitHub Readme Stats](https://github.com/readme-tools/github-readme-stats) cards in your GitHub Actions workflow, commit them to your profile repository, and embed them directly from there.
+Generate [GitHub Readme Stats](https://github.com/stats-organization/github-readme-stats) cards in your GitHub Actions workflow, commit them to your profile repository, and embed them directly from there.
 
 ## Quick start
 
@@ -23,7 +23,7 @@ jobs:
       - uses: actions/checkout@v6
 
       - name: Generate stats card
-        uses: readme-tools/github-readme-stats-action@v2
+        uses: stats-organization/github-readme-stats-action@v2
         with:
           card: stats
           options: username=${{ github.repository_owner }}&show_icons=true
@@ -31,7 +31,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Generate top languages card
-        uses: readme-tools/github-readme-stats-action@v2
+        uses: stats-organization/github-readme-stats-action@v2
         with:
           card: top-langs
           options: username=${{ github.repository_owner }}&layout=compact&langs_count=6
@@ -39,11 +39,11 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Generate pin card
-        uses: readme-tools/github-readme-stats-action@v2
+        uses: stats-organization/github-readme-stats-action@v2
         with:
           card: pin
-          options: username=readme-tools&repo=github-readme-stats
-          path: profile/pin-readme-tools-github-readme-stats.svg
+          options: username=stats-organization&repo=github-readme-stats
+          path: profile/pin-stats-organization-github-readme-stats.svg
           token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Commit cards
@@ -60,12 +60,12 @@ Then embed from your profile README:
 ```md
 ![Stats](./profile/stats.svg)
 ![Top Languages](./profile/top-langs.svg)
-![Pinned](./profile/pin-readme-tools-github-readme-stats.svg)
+![Pinned](./profile/pin-stats-organization-github-readme-stats.svg)
 ```
 
 ## Deployment options
 
-This action is a recommended deployment option. You can also deploy on Vercel or other platforms. See the [GitHub Readme Stats README](https://github.com/readme-tools/github-readme-stats#deploy-on-your-own).
+This action is a recommended deployment option. You can also use [our public GitHub-Stats-Extended instance](https://github.com/stats-organization/github-stats-extended#quick-start) or [deploy one yourself](https://github.com/stats-organization/github-stats-extended/blob/master/docs/deploy.md#self-hosted-on-vercel).
 
 ## Inputs
 

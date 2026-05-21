@@ -71,11 +71,11 @@ describe.concurrent("generate cards locally", () => {
   test("generated pin card contains svg", async () => {
     const pinPath = path.join(
       buildDir,
-      "pin-readme-tools-github-readme-stats.svg",
+      "pin-stats-organization-github-readme-stats.svg",
     );
     await runCard(
       "pin",
-      "username=readme-tools&repo=github-readme-stats",
+      "username=stats-organization&repo=github-readme-stats",
       pinPath,
     );
     await assertSvg(pinPath);
