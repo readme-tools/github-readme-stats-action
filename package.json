@@ -29,6 +29,6 @@
     "*.{js,jsx,ts,tsx,css,json,jsonc,yaml,yml}": "prettier --write"
   },
   "engines": {
-    "node": ">=24"
+    "node": "24.x"
   }
 }

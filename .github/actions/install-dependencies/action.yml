@@ -7,7 +7,7 @@ description: |
 
 inputs:
   node-version:
-    description: "Explicit node version. Otherwise fallback reading `.nvmrc`"
+    description: "Explicit node version. Otherwise fallback reading `engines.node` in `package.json`"
 
 runs:
   using: composite
@@ -24,11 +24,11 @@ runs:
         cache: "pnpm"
         registry-url: "https://registry.npmjs.org"
 
-    - name: Setup Node.js (via .nvmrc)
+    - name: Setup Node.js (via package.json engines)
       if: ${{ !inputs.node-version }}
       uses: actions/setup-node@53b83947a5a98c8d113130e565377fae1a50d02f # v6.3.0
       with:
-        node-version-file: ".nvmrc"
+        node-version-file: "package.json"
         cache: "pnpm"
         registry-url: "https://registry.npmjs.org"
 

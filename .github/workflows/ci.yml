@@ -17,12 +17,11 @@ permissions: {}
 
 jobs:
   test:
-    name: Test ${{ matrix.node }} on ${{ matrix.os }}
+    name: Test on ${{ matrix.os }}
 
     strategy:
       fail-fast: false
       matrix:
-        node: [24]
         os: [ubuntu-latest, macos-latest]
     runs-on: ${{ matrix.os }}
 
@@ -35,8 +34,6 @@ jobs:
 
       - name: Install Dependencies
         uses: ./.github/actions/install-dependencies
-        with:
-          node-version: ${{ matrix.node }}
 
       - name: Run E2E tests
         run: pnpm run test
