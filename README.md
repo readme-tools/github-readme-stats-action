@@ -75,6 +75,10 @@ This action is a recommended deployment option. You can also use [our public Git
 - `token`: GitHub token (PAT or `GITHUB_TOKEN`). For private repo stats, use a [PAT](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens) with `repo` and `read:user` scopes. For any gist, use a PAT with `gist` scope.
 - `core_version`: Version of [GitHub Stats Extended](https://github.com/stats-organization/github-stats-extended) to use internally. When omitted, the action uses the latest 2.x.x version.
 
+## Outputs
+
+- `path`: Path where the SVG file was written, relative to the workspace.
+
 ## Examples
 
 Stats example:

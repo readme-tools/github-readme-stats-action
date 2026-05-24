@@ -24,6 +24,7 @@ inputs:
 outputs:
   path:
     description: Path where the SVG file was written.
+    value: ${{ steps.generate.outputs.path }}
 runs:
   using: composite
   steps:
@@ -44,6 +45,7 @@ runs:
       shell: bash
       working-directory: ${{ github.action_path }}
     - name: Generate card
+      id: generate
       run: node ${{ github.action_path }}/index.js
       shell: bash
       env:
