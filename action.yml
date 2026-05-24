@@ -40,7 +40,10 @@ runs:
       with:
         node-version: "24"
     - name: Install dependencies
-      run: pnpm install --frozen-lockfile
+      # --prod skips devDependencies (husky, vitest, etc.); --ignore-scripts skips the
+      # husky prepare hook, which would otherwise fail since husky isn't installed.
+      # https://github.com/stats-organization/github-readme-stats-action/issues/63
+      run: pnpm install --frozen-lockfile --prod --ignore-scripts
       shell: bash
       working-directory: ${{ github.action_path }}
     - name: Generate card
