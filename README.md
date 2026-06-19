@@ -132,7 +132,7 @@ Version-pinned example:
 with:
   card: stats
   options: username=octocat&show_icons=true
-  core_version: 2.1.2
+  core_version: 2.1.3
   token: ${{ secrets.GITHUB_TOKEN }}
 ```
 
