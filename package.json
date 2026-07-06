@@ -22,7 +22,7 @@
     "husky": "9.1.7",
     "knip": "6.16.1",
     "lint-staged": "17.0.7",
-    "prettier": "3.8.4",
+    "prettier": "3.9.3",
     "vitest": "4.1.8"
   },
   "lint-staged": {
