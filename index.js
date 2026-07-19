@@ -181,9 +181,10 @@ const validateCardOptions = (card, query, repoOwner) => {
 
 const run = async () => {
   const card = getInput("card", { required: true }).toLowerCase();
-  const optionsInput = getInput("options") || "";
+  const optionsInput = getInput("options");
   const outputPathInput = getInput("path");
-  const coreVersion = validateCoreVersion(getInput("core_version") || "");
+  const coreVersion = validateCoreVersion(getInput("core_version"));
+  const failOnError = /^(true|1|yes)$/i.test(getInput("fail_on_error"));
 
   const coreModule = await loadCoreModule(coreVersion);
 
@@ -201,13 +202,24 @@ const run = async () => {
   const outputPathValue =
     outputPathInput || path.join("profile", `${card}.svg`);
   const outputPath = path.resolve(process.cwd(), outputPathValue);
-  await mkdir(path.dirname(outputPath), { recursive: true });
 
-  const svg = (await handler(query))?.content;
+  const result = await handler(query);
+  const svg = result?.content;
+
+  // The core renderer never throws on a data-fetch error; it returns a `status`
+  // starting with "error" and a "Something went wrong" SVG. When fail_on_error
+  // is enabled, fail the action so the broken card is never written or committed.
+  // Older core versions may not return a `status`, so this is a no-op for them.
+  if (failOnError && String(result?.status).startsWith("error")) {
+    setFailed(`Card generation failed while fetching data (${result.status}).`);
+    return;
+  }
+
   if (!svg) {
     throw new Error("Card renderer returned empty output.");
   }
 
+  await mkdir(path.dirname(outputPath), { recursive: true });
   await writeFile(outputPath, svg, "utf8");
   info(`Wrote ${outputPath}`);
   setOutput("path", outputPathValue);

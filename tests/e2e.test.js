@@ -13,7 +13,7 @@ const rootDir = path.resolve(
 const repoOwner = process.env.GITHUB_REPOSITORY_OWNER ?? "rickstaa";
 let buildDir;
 
-const runCard = (card, options, output, coreVersion) =>
+const runCard = (card, options, output, coreVersion, extraEnv = {}) =>
   new Promise((resolve, reject) => {
     const child = spawn(process.execPath, [path.join(rootDir, "index.js")], {
       stdio: "inherit",
@@ -23,6 +23,7 @@ const runCard = (card, options, output, coreVersion) =>
         INPUT_OPTIONS: options,
         INPUT_PATH: output,
         INPUT_CORE_VERSION: coreVersion,
+        ...extraEnv,
       },
     });
 
@@ -85,6 +86,39 @@ describe.concurrent("generate cards locally", () => {
     const wakatimePath = path.join(buildDir, "wakatime.svg");
     await runCard("wakatime", "username=MNZ&layout=compact", wakatimePath);
     await assertSvg(wakatimePath);
+  });
+
+  test("fails when fail_on_error is enabled and the renderer reports an error", async () => {
+    // An invalid locale makes the core renderer return an "error - permanent"
+    // result offline (no network), which the action must surface as a failure
+    // when fail_on_error is opted into.
+    const errorPath = path.join(buildDir, "error-fails.svg");
+
+    await expect(
+      runCard(
+        "stats",
+        `username=${repoOwner}&locale=zzinvalid`,
+        errorPath,
+        "",
+        {
+          INPUT_FAIL_ON_ERROR: "true",
+        },
+      ),
+    ).rejects.toThrow();
+
+    // The error card must not be written when the action fails.
+    await expect(readFile(errorPath, "utf8")).rejects.toThrow();
+  });
+
+  test("writes the error card by default (fail_on_error off)", async () => {
+    // Default behaviour: the action writes the error card and succeeds.
+    const errorPath = path.join(buildDir, "error-allowed.svg");
+
+    await runCard("stats", `username=${repoOwner}&locale=zzinvalid`, errorPath);
+
+    const data = await readFile(errorPath, "utf8");
+    expect(data).toContain("<svg");
+    expect(data).toContain("Something went wrong");
   });
 
   test("rejects invalid core_version input before install", async () => {

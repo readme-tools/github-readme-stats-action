@@ -21,6 +21,14 @@ inputs:
     description: Version of @stats-organization/github-readme-stats-core to use internally.
     required: false
     default: "v2"
+  fail_on_error:
+    description: >-
+      Fail the action when the card renderer reports a data-fetch error (e.g. a
+      GitHub API rate limit) instead of writing the "Something went wrong" error
+      card. Defaults to "false" to preserve backwards-compatible behaviour; set
+      to "true" to fail the action on a broken card.
+    required: false
+    default: "false"
 outputs:
   path:
     description: Path where the SVG file was written.
@@ -59,6 +67,7 @@ runs:
         INPUT_OPTIONS: ${{ inputs.options }}
         INPUT_PATH: ${{ inputs.path }}
         INPUT_CORE_VERSION: ${{ inputs.core_version }}
+        INPUT_FAIL_ON_ERROR: ${{ inputs.fail_on_error }}
         PAT_1: ${{ inputs.token || github.token }}
 branding:
   icon: bar-chart-2
