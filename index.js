@@ -211,8 +211,9 @@ const run = async () => {
   // is enabled, fail the action so the broken card is never written or committed.
   // Older core versions may not return a `status`, so this is a no-op for them.
   if (failOnError && String(result?.status).startsWith("error")) {
-    setFailed(`Card generation failed while fetching data (${result.status}).`);
-    return;
+    throw new Error(
+      `Card generation failed while fetching data (${result.status}).`,
+    );
   }
 
   if (!svg) {
