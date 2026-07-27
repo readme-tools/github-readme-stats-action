@@ -23,7 +23,7 @@
     "knip": "6.27.0",
     "lint-staged": "17.0.7",
     "prettier": "3.9.5",
-    "vitest": "4.1.8"
+    "vitest": "4.1.10"
   },
   "lint-staged": {
     "*.{js,jsx,ts,tsx,css,json,jsonc,yaml,yml}": "prettier --write"
