@@ -1,4 +1,12 @@
 {
   "$schema": "./node_modules/knip/schema.json",
-  "ignoreDependencies": ["@stats-organization/github-readme-stats-core"]
+
+  // index.js loads the core package with `await import(CORE_PACKAGE_NAME)`. The
+  // specifier is a variable, so knip cannot resolve it and reports the
+  // dependency as unused.
+  "ignoreDependencies": ["@stats-organization/github-readme-stats-core"],
+
+  // ci.yml calls `pnpm info` to resolve a version spec against the registry.
+  // knip does not know that pnpm subcommand and reads `info` as a binary.
+  "ignoreBinaries": ["info"]
 }

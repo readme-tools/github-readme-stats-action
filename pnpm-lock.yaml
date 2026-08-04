@@ -9,7 +9,7 @@ importers:
   .:
     dependencies:
       '@actions/core':
-        specifier: ^3.0.1
+        specifier: 3.0.1
         version: 3.0.1
       '@stats-organization/github-readme-stats-core':
         specifier: 2.1.3

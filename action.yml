@@ -1,6 +1,7 @@
 name: GitHub Readme Stats Action
 description: Generate GitHub Readme Stats cards in GitHub Actions.
 author: stats-organization
+
 inputs:
   card:
     description: Card type to generate (stats, top-langs, pin, wakatime, gist).
@@ -18,15 +19,17 @@ inputs:
     required: false
     default: ""
   core_version:
-    description: Version of @stats-organization/github-readme-stats-core to use internally.
+    description: >-
+      Version of @stats-organization/github-readme-stats-core to use internally (any npm version, range or dist-tag).
+      Defaults to the latest 2.x. 
+      Set to an empty string to use the version pinned by this action release instead.
     required: false
     default: "v2"
   fail_on_error:
     description: >-
-      Fail the action when the card renderer reports a data-fetch error (e.g. a
-      GitHub API rate limit) instead of writing the "Something went wrong" error
-      card. Defaults to "false" to preserve backwards-compatible behaviour; set
-      to "true" to fail the action on a broken card.
+      Fail the action when the card renderer reports a data-fetch error 
+      (e.g. a GitHub API rate limit) instead of writing the "Something went wrong" error card.
+      Defaults to "false" to preserve backwards-compatible behavior; set to "true" to fail the action on a broken card.
     required: false
     default: "false"
 outputs:
@@ -55,9 +58,29 @@ runs:
       # --prod skips devDependencies (husky, vitest, etc.); --ignore-scripts skips the
       # husky prepare hook, which would otherwise fail since husky isn't installed.
       # https://github.com/stats-organization/github-readme-stats-action/issues/63
-      run: pnpm install --frozen-lockfile --prod --ignore-scripts
+      #
+      # `core_version` is applied here so index.js can use plain node_modules
+      # resolution. It arrives via env (never interpolated) and is validated.
+      # --no-lockfile is required: with a lockfile pnpm keeps the locked version
+      # whenever it satisfies the new range, so "v2" would resolve to the pin.
+      run: |
+        if [ -n "$CORE_VERSION" ]; then
+          case "$CORE_VERSION" in
+            *[!a-zA-Z0-9._-]*)
+              echo "::error::core_version must contain only a-zA-Z0-9._- characters."
+              exit 1
+              ;;
+          esac
+          pnpm pkg set "dependencies.$CORE_PACKAGE_NAME=$CORE_VERSION"
+          pnpm install --no-lockfile --prod --ignore-scripts
+        else
+          pnpm install --frozen-lockfile --prod --ignore-scripts
+        fi
       shell: bash
       working-directory: ${{ github.action_path }}
+      env:
+        CORE_VERSION: ${{ inputs.core_version }}
+        CORE_PACKAGE_NAME: "@stats-organization/github-readme-stats-core"
     - name: Generate card
       id: generate
       run: node ${{ github.action_path }}/index.js
@@ -66,9 +89,9 @@ runs:
         INPUT_CARD: ${{ inputs.card }}
         INPUT_OPTIONS: ${{ inputs.options }}
         INPUT_PATH: ${{ inputs.path }}
-        INPUT_CORE_VERSION: ${{ inputs.core_version }}
         INPUT_FAIL_ON_ERROR: ${{ inputs.fail_on_error }}
         PAT_1: ${{ inputs.token || github.token }}
+
 branding:
   icon: bar-chart-2
   color: blue

@@ -13,7 +13,7 @@ const rootDir = path.resolve(
 const repoOwner = process.env.GITHUB_REPOSITORY_OWNER ?? "rickstaa";
 let buildDir;
 
-const runCard = (card, options, output, coreVersion, extraEnv = {}) =>
+const runCard = (card, options, output, extraEnv = {}) =>
   new Promise((resolve, reject) => {
     const child = spawn(process.execPath, [path.join(rootDir, "index.js")], {
       stdio: "inherit",
@@ -22,7 +22,6 @@ const runCard = (card, options, output, coreVersion, extraEnv = {}) =>
         INPUT_CARD: card,
         INPUT_OPTIONS: options,
         INPUT_PATH: output,
-        INPUT_CORE_VERSION: coreVersion,
         ...extraEnv,
       },
     });
@@ -95,15 +94,9 @@ describe.concurrent("generate cards locally", () => {
     const errorPath = path.join(buildDir, "error-fails.svg");
 
     await expect(
-      runCard(
-        "stats",
-        `username=${repoOwner}&locale=zzinvalid`,
-        errorPath,
-        "",
-        {
-          INPUT_FAIL_ON_ERROR: "true",
-        },
-      ),
+      runCard("stats", `username=${repoOwner}&locale=zzinvalid`, errorPath, {
+        INPUT_FAIL_ON_ERROR: "true",
+      }),
     ).rejects.toThrow();
 
     // The error card must not be written when the action fails.
@@ -120,41 +113,4 @@ describe.concurrent("generate cards locally", () => {
     expect(data).toContain("<svg");
     expect(data).toContain("Something went wrong");
   });
-
-  test("rejects invalid core_version input before install", async () => {
-    const invalidVersionPath = path.join(buildDir, "invalid-version.svg");
-
-    await expect(
-      runCard(
-        "stats",
-        `username=${repoOwner}`,
-        invalidVersionPath,
-        "latest && whoami",
-      ),
-    ).rejects.toThrow();
-  });
 });
-
-describe("include requested core package versions", () => {
-  test("use core package version 'v2'", async () => {
-    const v2Path = path.join(buildDir, "v2.svg");
-
-    await runCard("stats", `username=${repoOwner}`, v2Path, "v2");
-    await assertSvg(v2Path);
-  });
-
-  test("use core package version 'latest'", async () => {
-    const latestPath = path.join(buildDir, "latest.svg");
-
-    await runCard("stats", `username=${repoOwner}`, latestPath, "latest");
-    await assertSvg(latestPath);
-  });
-
-  test("core package version 'abcdef' fails", async () => {
-    const abcdefPath = path.join(buildDir, "abcdef.svg");
-
-    await expect(
-      runCard("stats", `username=${repoOwner}`, abcdefPath, "abcdef"),
-    ).rejects.toThrow();
-  });
-}, 20_000);
