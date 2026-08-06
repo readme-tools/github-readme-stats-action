@@ -1,6 +1,13 @@
+# pnpm settings — https://pnpm.io/11.x/settings
+
+# Deliberately stricter than pnpm 11's 1440 default (7 days vs 1)
 minimumReleaseAge: 10080
 minimumReleaseAgeExclude:
   - "@stats-organization/github-readme-stats-core"
 
-onlyBuiltDependencies:
-  - "@stats-organization/root"
+# Reject a version with weaker publish trust evidence than an earlier one.
+trustPolicy: no-downgrade
+
+# Fail on unmet peers and on a Node version outside `engines`, instead of warning
+strictPeerDependencies: true
+engineStrict: true
