@@ -3,6 +3,8 @@
 # Deliberately stricter than pnpm 11's 1440 default (7 days vs 1)
 minimumReleaseAge: 10080
 minimumReleaseAgeExclude:
+  # Excluded so `core_version` stays honest: `latest` and `v2` must get the newest
+  # release, not one held back for a week. Also keeps the CI version assertion green.
   - "@stats-organization/github-readme-stats-core"
 
 # Reject a version with weaker publish trust evidence than an earlier one.
