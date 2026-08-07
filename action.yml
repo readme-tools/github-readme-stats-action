@@ -63,6 +63,11 @@ runs:
       # resolution. It arrives via env (never interpolated) and is validated.
       # --no-lockfile is required: with a lockfile pnpm keeps the locked version
       # whenever it satisfies the new range, so "v2" would resolve to the pin.
+      # The lockfile is removed rather than left in place only to avoid pnpm
+      # warning that it exists but is being ignored.
+      #
+      # `pkg set` needs the bracket form: pnpm 11 rejects `@` in a dot property
+      # path with ERR_PNPM_UNEXPECTED_TOKEN_IN_PROPERTY_PATH.
       run: |
         if [ -n "$CORE_VERSION" ]; then
           case "$CORE_VERSION" in
@@ -71,7 +76,8 @@ runs:
               exit 1
               ;;
           esac
-          pnpm pkg set "dependencies.$CORE_PACKAGE_NAME=$CORE_VERSION"
+          pnpm pkg set "dependencies[\"$CORE_PACKAGE_NAME\"]=$CORE_VERSION"
+          rm -f pnpm-lock.yaml
           pnpm install --no-lockfile --prod --ignore-scripts
         else
           pnpm install --frozen-lockfile --prod --ignore-scripts

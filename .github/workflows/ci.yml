@@ -73,9 +73,16 @@ jobs:
       # `uses: ./` installs into the workspace checkout, so ./node_modules is the action's tree.
       # Checks input -> package.json spec -> installed version;
       # `pnpm info` lists every version matching the spec, highest last.
+      #
+      # Depends on core being listed in `minimumReleaseAgeExclude` (pnpm-workspace.yaml).
+      # Without it, `pnpm info` would report a release that pnpm still refuses to install,
+      # so this would fail for `minimumReleaseAge`after every core publish.
+      #
+      # `pkg get` needs the bracket form: pnpm 11 rejects `@` in a dot property
+      # path with ERR_PNPM_UNEXPECTED_TOKEN_IN_PROPERTY_PATH.
       - name: Assert the installed core version matches core_version
         run: |
-          spec=$(pnpm pkg get "dependencies.$PKG" | tr -d '"')
+          spec=$(pnpm pkg get "dependencies[\"$PKG\"]" | tr -d '"')
           expected=$(pnpm info "$PKG@$spec" version | tail -1 | tr -d "'" | awk '{print $NF}')
           installed=$(pnpm list --depth 0 "$PKG" | grep -F "$PKG@" | sed 's/.*@//')
           echo "input='$CORE_VERSION' spec='$spec' expected='$expected' installed='$installed'"
