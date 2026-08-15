@@ -10,7 +10,6 @@ import { getInput, info, setFailed, setOutput, warning } from "@actions/core";
 
 const execAsync = promisify(exec);
 const CORE_PACKAGE_NAME = "@stats-organization/github-readme-stats-core";
-const supportedCoreExports = ["api", "topLangs", "pin", "wakatime", "gist"];
 
 const validateCoreVersion = (value) => {
   const pattern = /^[a-zA-Z0-9._-]*$/;
@@ -70,45 +69,15 @@ const loadCoreModule = async (version) => {
 };
 
 /**
- * Build the map of supported card handlers from the loaded core module.
- * @param {Record<string, unknown>} coreModule Loaded core package module.
- * @returns {Record<string, Function>} Card handlers.
+ * Map of supported card types to the core export to call and the option each requires.
+ * @type {Record<string, { exportName: string, requires: string }>}
  */
-const createCardHandlers = (coreModule) => {
-  for (const exportName of supportedCoreExports) {
-    if (typeof coreModule[exportName] !== "function") {
-      throw new Error(
-        `Loaded ${CORE_PACKAGE_NAME} does not expose the expected '${exportName}' function.`,
-      );
-    }
-  }
-
-  return {
-    stats: coreModule.api,
-    "top-langs": coreModule.topLangs,
-    pin: coreModule.pin,
-    wakatime: coreModule.wakatime,
-    gist: coreModule.gist,
-  };
-};
-
-/**
- * Normalize option values to strings.
- * @param {Record<string, unknown>} options Input options.
- * @returns {Record<string, string>} Normalized options.
- */
-const normalizeOptions = (options) => {
-  const normalized = {};
-  for (const [key, val] of Object.entries(options)) {
-    if (Array.isArray(val)) {
-      normalized[key] = val.join(",");
-    } else if (val === null || val === undefined) {
-      continue;
-    } else {
-      normalized[key] = String(val);
-    }
-  }
-  return normalized;
+const CARDS = {
+  stats: { exportName: "api", requires: "username" },
+  "top-langs": { exportName: "topLangs", requires: "username" },
+  pin: { exportName: "pin", requires: "repo" },
+  wakatime: { exportName: "wakatime", requires: "username" },
+  gist: { exportName: "gist", requires: "id" },
 };
 
 /**
@@ -117,66 +86,65 @@ const normalizeOptions = (options) => {
  * @returns {Record<string, string>} Parsed options.
  */
 const parseOptions = (value) => {
-  if (!value) {
+  const trimmed = value?.trim();
+  if (!trimmed) {
     return {};
   }
 
-  const trimmed = value.trim();
-  const options = {};
   if (trimmed.startsWith("{")) {
+    let parsed;
     try {
-      Object.assign(options, JSON.parse(trimmed));
+      parsed = JSON.parse(trimmed);
     } catch {
       throw new Error("Invalid JSON in options.");
     }
-  } else {
-    const queryString = trimmed.startsWith("?") ? trimmed.slice(1) : trimmed;
-    const params = new URLSearchParams(queryString);
-    for (const [key, val] of params.entries()) {
-      if (options[key]) {
-        options[key] = `${options[key]},${val}`;
-      } else {
-        options[key] = val;
-      }
-    }
+    return Object.fromEntries(
+      Object.entries(parsed)
+        .filter(([, val]) => val !== null && val !== undefined)
+        .map(([key, val]) => [
+          key,
+          Array.isArray(val) ? val.join(",") : String(val),
+        ]),
+    );
   }
 
-  return normalizeOptions(options);
+  // URLSearchParams strips a single leading "?" natively.
+  const params = new URLSearchParams(trimmed);
+  return Object.fromEntries(
+    [...new Set(params.keys())].map((key) => [
+      key,
+      params.getAll(key).join(","),
+    ]),
+  );
 };
 
 /**
- * Validate required options for each card type.
+ * Validate the requested card and resolve its handler.
+ * @param {Record<string, unknown>} coreModule Loaded core package module.
  * @param {string} card Card type.
  * @param {Record<string, string>} query Parsed options.
- * @param {string | undefined} repoOwner Repository owner from environment.
- * @throws {Error} If required options are missing.
+ * @returns {Function} Card handler.
+ * @throws {Error} If the card, a core export or a required option is missing.
  */
-const validateCardOptions = (card, query, repoOwner) => {
-  if (!query.username && repoOwner) {
-    query.username = repoOwner;
-    warning("username not provided; defaulting to repository owner.");
+const resolveCardHandler = (coreModule, card, query) => {
+  const cardDef = CARDS[card];
+  if (!cardDef) {
+    throw new Error(`Unsupported card type: ${card}`);
   }
-  switch (card) {
-    case "stats":
-    case "top-langs":
-    case "wakatime":
-      if (!query.username) {
-        throw new Error(`username is required for the ${card} card.`);
-      }
-      break;
-    case "pin":
-      if (!query.repo) {
-        throw new Error("repo is required for the pin card.");
-      }
-      break;
-    case "gist":
-      if (!query.id) {
-        throw new Error("id is required for the gist card.");
-      }
-      break;
-    default:
-      break;
+
+  for (const { exportName } of Object.values(CARDS)) {
+    if (typeof coreModule[exportName] !== "function") {
+      throw new Error(
+        `Loaded ${CORE_PACKAGE_NAME} does not expose the expected '${exportName}' function.`,
+      );
+    }
   }
+
+  if (!query[cardDef.requires]) {
+    throw new Error(`${cardDef.requires} is required for the ${card} card.`);
+  }
+
+  return coreModule[cardDef.exportName];
 };
 
 const run = async () => {
@@ -188,16 +156,13 @@ const run = async () => {
 
   const coreModule = await loadCoreModule(coreVersion);
 
-  // Map of card types to their respective API handlers.
-  const cardHandlers = createCardHandlers(coreModule);
-  const handler = cardHandlers[card];
-  if (!handler) {
-    throw new Error(`Unsupported card type: ${card}`);
+  const query = parseOptions(optionsInput);
+  if (!query.username && process.env.GITHUB_REPOSITORY_OWNER) {
+    query.username = process.env.GITHUB_REPOSITORY_OWNER;
+    warning("username not provided; defaulting to repository owner.");
   }
 
-  const query = parseOptions(optionsInput);
-
-  validateCardOptions(card, query, process.env.GITHUB_REPOSITORY_OWNER);
+  const handler = resolveCardHandler(coreModule, card, query);
 
   const outputPathValue =
     outputPathInput || path.join("profile", `${card}.svg`);
