@@ -70,11 +70,9 @@ jobs:
         run: grep -q "<svg" "${{ steps.generate.outputs.path }}"
         shell: bash
 
-      # `uses: ./` installs into the workspace, so ./node_modules is the action's tree.
-      # Resolves the input, not the saved spec, which `pnpm add` rewrites ("v2" -> "^2.1.5").
-      # An empty input means the lockfile pin, i.e. whatever package.json holds.
-      # Relies on core being in `minimumReleaseAgeExclude` (pnpm-workspace.yaml).
-      # `pkg get` needs the bracket form: pnpm 11 rejects `@` in a dot path.
+      # Resolves input, not saved spec (pnpm add rewrites "v2" → "^2.1.5").
+      # Empty input uses the lockfile pin (whatever package.json holds).
+      # pkg get requires bracket syntax; pnpm 11 rejects @ in dot paths.
       - name: Assert the installed core version matches core_version
         run: |
           spec=$(pnpm pkg get "dependencies[\"$PKG\"]" | tr -d '"')

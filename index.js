@@ -144,10 +144,8 @@ const run = async () => {
   const result = await handler(query);
   const svg = result?.content;
 
-  // The core renderer never throws on a data-fetch error; it returns a `status`
-  // starting with "error" and a "Something went wrong" SVG. When fail_on_error
-  // is enabled, fail the action so the broken card is never written or committed.
-  // Older core versions may not return a `status`, so this is a no-op for them.
+  // Renderer returns error* status + fallback SVG on fetch errors.
+  // With fail_on_error, fail before the broken card is written/committed.
   if (failOnError && String(result?.status).startsWith("error")) {
     throw new Error(
       `Card generation failed while fetching data (${result.status}).`,
