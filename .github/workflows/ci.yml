@@ -41,6 +41,79 @@ jobs:
           PAT_1: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_REPOSITORY_OWNER: "rickstaa"
 
+  action:
+    name: Action (core_version ${{ matrix.core_version || 'empty' }})
+
+    strategy:
+      fail-fast: false
+      matrix:
+        core_version: ["", "2.1.3", "v2"]
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Generate stats card
+        id: generate
+        uses: ./
+        with:
+          card: stats
+          options: username=rickstaa
+          path: profile/stats.svg
+          core_version: ${{ matrix.core_version }}
+
+      - name: Assert the card was written
+        run: grep -q "<svg" "${{ steps.generate.outputs.path }}"
+        shell: bash
+
+      # Resolves input, not saved spec (pnpm add rewrites "v2" → "^2.1.5").
+      # Empty input uses the lockfile pin (whatever package.json holds).
+      # pkg get requires bracket syntax; pnpm 11 rejects @ in dot paths.
+      - name: Assert the installed core version matches core_version
+        run: |
+          spec=$(pnpm pkg get "dependencies[\"$PKG\"]" | tr -d '"')
+          expected=$(pnpm info "$PKG@${CORE_VERSION:-$spec}" version | tail -1 | tr -d "'" | awk '{print $NF}')
+          installed=$(pnpm list --depth 0 "$PKG" | grep -F "$PKG@" | sed 's/.*@//')
+          echo "input='$CORE_VERSION' spec='$spec' expected='$expected' installed='$installed'"
+          [ "$installed" = "$expected" ] || { echo "::error::installed core '$installed', expected '$expected' for core_version '$CORE_VERSION'"; exit 1; }
+        shell: bash
+        env:
+          CORE_VERSION: ${{ matrix.core_version }}
+          PKG: "@stats-organization/github-readme-stats-core"
+
+  action-invalid-core-version:
+    name: Action rejects an invalid core_version
+
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Generate stats card
+        id: generate
+        continue-on-error: true
+        uses: ./
+        with:
+          card: stats
+          options: username=rickstaa
+          core_version: "latest && whoami"
+
+      - name: Assert the action failed
+        run: |
+          if [ "${{ steps.generate.outcome }}" != "failure" ]; then
+            echo "::error::expected the action to reject the core_version input"
+            exit 1
+          fi
+        shell: bash
+
   code-checks:
     name: Code checks
 

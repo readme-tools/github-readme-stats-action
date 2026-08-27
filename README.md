@@ -73,7 +73,8 @@ This action is a recommended deployment option. You can also use [our public Git
 - `options`: Card options as a query string (`key=value&...`) or JSON. If `username` is omitted, the action uses the repository owner.
 - `path`: Output path for the SVG file. Defaults to `profile/<card>.svg`.
 - `token`: GitHub token (PAT or `GITHUB_TOKEN`). For private repo stats, use a [PAT](https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/managing-your-personal-access-tokens) with `repo` and `read:user` scopes. For any gist, use a PAT with `gist` scope.
-- `core_version`: Version of [GitHub Stats Extended](https://github.com/stats-organization/github-stats-extended) to use internally. When omitted, the action uses the latest 2.x.x version.
+- `core_version`: Version of [GitHub Stats Extended](https://github.com/stats-organization/github-stats-extended) to use internally. Accepts any npm version, range or dist-tag (`2.1.3`, `v2`, `latest`).\
+  When omitted, the action uses the latest 2.x.x version. Set an exact version for reproducible runs, or an empty string to use the version pinned by the action release you reference.
 - `fail_on_error`: Fail the action when data fetching fails (e.g. a GitHub API rate limit) instead of writing the "Something went wrong" error card.\
   Defaults to `false` for backwards compatibility.
 
