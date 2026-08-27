@@ -2,8 +2,5 @@
   "$schema": "./node_modules/knip/schema.json",
 
   // index.js imports core through a variable specifier, which knip cannot resolve.
-  "ignoreDependencies": ["@stats-organization/github-readme-stats-core"],
-
-  // ci.yml runs `pnpm info`; knip reads the unknown subcommand as a binary.
-  "ignoreBinaries": ["info"]
+  "ignoreDependencies": ["@stats-organization/github-readme-stats-core"]
 }

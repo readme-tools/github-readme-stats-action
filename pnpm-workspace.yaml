@@ -6,6 +6,9 @@ minimumReleaseAgeExclude:
   # Excluded so `core_version` stays honest: `latest` and `v2` must get the newest
   # release, not one held back for a week. Also keeps the CI version assertion green.
   - "@stats-organization/github-readme-stats-core"
+  # Added to avoid warnings on pnpm info which is fixed in this version
+  # see https://github.com/stats-organization/github-readme-stats-action/pull/116#discussion_r3788795111
+  - knip@6.32.3
 
 # Reject a version with weaker publish trust evidence than an earlier one.
 trustPolicy: no-downgrade
